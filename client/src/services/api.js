@@ -5,17 +5,17 @@ const API = axios.create({
 });
 
 export const menuAPI = {
-  getAll: () => API.get('api/menu'),
-  create: (data) => API.post('api/menu', data),
-  update: (id, data) => API.put(`api/menu/${id}`, data),
-  delete: (id) => API.delete(`api/menu/${id}`),
+  getAll: () => API.get('/menu'),
+  create: (data) => API.post('/menu', data),
+  update: (id, data) => API.put(`/menu/${id}`, data),
+  delete: (id) => API.delete(`/menu/${id}`),
 };
 
 export const tableAPI = {
-  getAll: () => API.get('api/tables'),
-  create: (data) => API.post('api/tables', data),
-  update: (id, data) => API.put(`api/tables/${id}`, data),
-  delete: (id) => API.delete(`api/tables/${id}`),
+  getAll: () => API.get('/tables'),
+  create: (data) => API.post('/tables', data),
+  update: (id, data) => API.put(`/tables/${id}`, data),
+  delete: (id) => API.delete(`/tables/${id}`),
 };
 
 export const orderAPI = {
@@ -26,28 +26,28 @@ export const orderAPI = {
     if (filters.startDate) params.append('startDate', filters.startDate);
     if (filters.endDate) params.append('endDate', filters.endDate);
     if (filters.search) params.append('search', filters.search);
-    return API.get(`api/orders?${params.toString()}`);
+    return API.get(`/orders?${params.toString()}`);
   },
-  getNextBillNo: () => API.get('api/orders/next-bill-no'),
-  create: (data) => API.post('api/orders', data),
-  update: (id, data) => API.put(`api/orders/${id}`, data),
-  updateStatus: (id, status) => API.put(`api/orders/status/${id}`, { status }),
-  delete: (id) => API.delete(`api/orders/${id}`),
-  getSummary: () => API.get('api/orders/reports/summary'),
+  getNextBillNo: () => API.get('/orders/next-bill-no'),
+  create: (data) => API.post('/orders', data),
+  update: (id, data) => API.put(`/orders/${id}`, data),
+  updateStatus: (id, status) => API.put(`/orders/status/${id}`, { status }),
+  delete: (id) => API.delete(`/orders/${id}`),
+  getSummary: () => API.get('/orders/reports/summary'),
   getSalesReport: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return API.get(`api/orders/reports/sales?${query}`);
+    return API.get(`/orders/reports/sales?${query}`);
   },
 };
 
 export const settingsAPI = {
-  get: () => API.get('api/settings'),
-  update: (data) => API.post('api/settings', data),
+  get: () => API.get('/settings'),
+  update: (data) => API.post('/settings', data),
 };
 
 export const backupAPI = {
-  export: () => API.get('api/backup/export'),
-  restore: (data) => API.post('api/backup/restore', data),
+  export: () => API.get('/backup/export'),
+  restore: (data) => API.post('/backup/restore', data),
 };
 
 export default API;
