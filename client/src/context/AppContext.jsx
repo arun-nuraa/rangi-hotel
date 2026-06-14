@@ -1,6 +1,6 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { menuAPI, tableAPI, settingsAPI, orderAPI } from '../services/api';
-import bluetoothPrinter from '../services/bluetoothPrinter';
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { menuAPI, tableAPI, settingsAPI, orderAPI } from "../services/api";
+import bluetoothPrinter from "../services/bluetoothPrinter";
 
 const AppContext = createContext();
 
@@ -9,48 +9,47 @@ export const AppProvider = ({ children }) => {
   const [menuItems, setMenuItems] = useState([]);
   const [tables, setTables] = useState([]);
   const [settings, setSettings] = useState({
-    restaurantName: 'Naidu Hotel',
-    address: '123 Main Street, Bangalore',
-    phone: '+91 9876543210',
-    footerMessage: 'Thank you! Visit again.',
+    restaurantName: "Naidu Hotel",
+    address: "123 Main Street, Bangalore",
+    phone: "+91 9876543210",
+    footerMessage: "Thank you! Visit again.",
     defaultPackingCharge: 10,
-    gstPercentage: 5
   });
   const [activeOrders, setActiveOrders] = useState([]);
-  
+
   // Billing States
   const [cart, setCart] = useState([]);
-  const [selectedTable, setSelectedTable] = useState('Parcel'); // 'Parcel' or Table Number (e.g. 'T-1')
-  const [orderType, setOrderType] = useState('Parcel'); // 'Dine-in' or 'Parcel'
-  const [customerName, setCustomerName] = useState('');
+  const [selectedTable, setSelectedTable] = useState("Parcel");
+  const [orderType, setOrderType] = useState("Parcel");
+  const [customerName, setCustomerName] = useState("");
   const [discount, setDiscount] = useState(0);
   const [packing, setPacking] = useState(0);
-  const [currentBillNo, setCurrentBillNo] = useState('NH-00001');
-  const [editingOrderId, setEditingOrderId] = useState(null); // When editing an order
+  const [currentBillNo, setCurrentBillNo] = useState("NH-00001");
+  const [editingOrderId, setEditingOrderId] = useState(null);
   const [holdToggle, setHoldToggle] = useState(false);
 
   // Bluetooth States
   const [printerConnected, setPrinterConnected] = useState(false);
-  const [printerName, setPrinterName] = useState('');
+  const [printerName, setPrinterName] = useState("");
 
   // Fetch all initial data
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [menuRes, tableRes, settingsRes, nextBillRes, ordersRes] = await Promise.all([
-        menuAPI.getAll(),
-        tableAPI.getAll(),
-        settingsAPI.get(),
-        orderAPI.getNextBillNo(),
-        orderAPI.getAll({ status: 'Hold' }) // Get hold orders
-      ]);
+      const [menuRes, tableRes, settingsRes, nextBillRes, ordersRes] =
+        await Promise.all([
+          menuAPI.getAll(),
+          tableAPI.getAll(),
+          settingsAPI.get(),
+          orderAPI.getNextBillNo(),
+          orderAPI.getAll({ status: "Hold" }),
+        ]);
 
       setMenuItems(menuRes.data);
       setTables(tableRes.data);
       if (settingsRes.data) {
         setSettings(settingsRes.data);
-        // Set default packing charge if not editing an order
-        if (!editingOrderId && orderType === 'Parcel') {
+        if (!editingOrderId && orderType === "Parcel") {
           setPacking(settingsRes.data.defaultPackingCharge || 0);
         }
       }
@@ -59,7 +58,7 @@ export const AppProvider = ({ children }) => {
       }
       setActiveOrders(ordersRes.data);
     } catch (error) {
-      console.error('Error loading initial data:', error);
+      console.error("Error loading initial data:", error);
     } finally {
       setLoading(false);
     }
@@ -72,7 +71,7 @@ export const AppProvider = ({ children }) => {
   // Sync packing charge when order type changes
   useEffect(() => {
     if (!editingOrderId) {
-      if (orderType === 'Parcel') {
+      if (orderType === "Parcel") {
         setPacking(settings.defaultPackingCharge || 0);
       } else {
         setPacking(0);
@@ -89,7 +88,7 @@ export const AppProvider = ({ children }) => {
       return name;
     } catch (error) {
       setPrinterConnected(false);
-      setPrinterName('');
+      setPrinterName("");
       throw error;
     }
   };
@@ -97,7 +96,7 @@ export const AppProvider = ({ children }) => {
   const disconnectPrinter = () => {
     bluetoothPrinter.disconnect();
     setPrinterConnected(false);
-    setPrinterName('');
+    setPrinterName("");
   };
 
   // Cart actions
@@ -106,10 +105,13 @@ export const AppProvider = ({ children }) => {
       const existing = prevCart.find((i) => i.name === item.name);
       if (existing) {
         return prevCart.map((i) =>
-          i.name === item.name ? { ...i, quantity: i.quantity + 1 } : i
+          i.name === item.name ? { ...i, quantity: i.quantity + 1 } : i,
         );
       }
-      return [...prevCart, { name: item.name, price: item.price, quantity: 1, type: item.type }];
+      return [
+        ...prevCart,
+        { name: item.name, price: item.price, quantity: 1, type: item.type },
+      ];
     });
   };
 
@@ -123,51 +125,61 @@ export const AppProvider = ({ children }) => {
       return;
     }
     setCart((prevCart) =>
-      prevCart.map((item) => (item.name === name ? { ...item, quantity: qty } : item))
+      prevCart.map((item) =>
+        item.name === name ? { ...item, quantity: qty } : item,
+      ),
     );
   };
 
   const clearCart = () => {
     setCart([]);
-    setCustomerName('');
+    setCustomerName("");
     setDiscount(0);
-    setPacking(orderType === 'Parcel' ? settings.defaultPackingCharge || 0 : 0);
+    setPacking(orderType === "Parcel" ? settings.defaultPackingCharge || 0 : 0);
     setHoldToggle(false);
     setEditingOrderId(null);
-    setSelectedTable('Parcel');
-    setOrderType('Parcel');
-    // Fetch next bill number
-    orderAPI.getNextBillNo().then(res => setCurrentBillNo(res.data.nextBillNo));
+    setSelectedTable("Parcel");
+    setOrderType("Parcel");
+    orderAPI
+      .getNextBillNo()
+      .then((res) => setCurrentBillNo(res.data.nextBillNo));
   };
 
-  // Calculations
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const gstValue = parseFloat(((subtotal * (settings.gstPercentage || 5)) / 100).toFixed(2));
-  const finalTotal = parseFloat((subtotal + gstValue + parseFloat(packing || 0) - parseFloat(discount || 0)).toFixed(2));
+  // Calculations — NO GST
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const finalTotal = parseFloat(
+    (subtotal + parseFloat(packing || 0) - parseFloat(discount || 0)).toFixed(
+      2,
+    ),
+  );
 
-  // Edit an existing order (loads it into billing screen)
+  // Edit an existing order
   const loadOrderForEditing = (order) => {
     setEditingOrderId(order._id);
     setCurrentBillNo(order.billNo);
     setSelectedTable(order.table);
     setOrderType(order.type);
-    setCustomerName(order.customerName || '');
+    setCustomerName(order.customerName || "");
     setDiscount(order.discount || 0);
     setPacking(order.packing || 0);
-    setHoldToggle(order.status === 'Hold');
-    setCart(order.items.map(item => ({
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      type: item.type
-    })));
+    setHoldToggle(order.status === "Hold");
+    setCart(
+      order.items.map((item) => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        type: item.type,
+      })),
+    );
   };
 
-  // Refresh lists helper
   const refreshOrdersAndTables = async () => {
     const [ordersRes, tablesRes] = await Promise.all([
-      orderAPI.getAll({ status: 'Hold' }),
-      tableAPI.getAll()
+      orderAPI.getAll({ status: "Hold" }),
+      tableAPI.getAll(),
     ]);
     setActiveOrders(ordersRes.data);
     setTables(tablesRes.data);
@@ -194,7 +206,6 @@ export const AppProvider = ({ children }) => {
         printerConnected,
         printerName,
         subtotal,
-        gstValue,
         finalTotal,
         setMenuItems,
         setTables,
@@ -215,7 +226,7 @@ export const AppProvider = ({ children }) => {
         updateCartQuantity,
         clearCart,
         loadOrderForEditing,
-        refreshOrdersAndTables
+        refreshOrdersAndTables,
       }}
     >
       {children}
